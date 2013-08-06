@@ -3,9 +3,9 @@
 
 bits 32
 
-%define SYS_WRITE  4
-%define EINTR      4
-%define EINVAL    22
+%include "errno.inc"
+%include "syscalls.inc"
+
 
 global _io_errno
 global _write
@@ -24,15 +24,16 @@ _write:
     push ebp                        ; save previous stack base (frame)
     mov ebp, esp                    ; set new stack base (frame)
 
-    ; alloc space for write booking and syscall args
-    sub esp, 16                     
-
-    ; initialze write booking
-    xor eax, eax
-    mov [ebp - 4], eax
+    ; alloc space for buffer base copy and syscall args
+    sub esp, byte 16
 
     ; prevent negative file descriptors
     mov eax, [ebp + 8]
+    test eax, eax
+    js .badargs
+
+    ; prevent signed buffer size
+    mov eax, [ebp + 16]
     test eax, eax
     js .badargs
 
@@ -41,10 +42,8 @@ _write:
     test eax, eax
     jz .badargs
 
-    ; prevent signed buffer size
-    mov eax, [ebp + 16]
-    test eax, eax
-    js .badargs
+    ; save a copy of buffer base
+    mov [ebp - 4], eax              
 
 .write:
 
@@ -57,17 +56,29 @@ _write:
     mov [esp], eax
     mov eax, SYS_WRITE
     call _kernel
+
+    ; carry set indicates an error
     jc .failure
 
-    ; update write booking with EAX
-    add [ebp - 4], eax
+    ; update buffer base
+    add [ebp + 12], eax
 
-    ; check if there is anything left to write
-    sub [ebp + 16], eax             ; update write count
-    je .success                     ; if result is zero, success!
+    ; update write count 
+    sub [ebp + 16], eax
 
-    add [ebp + 12], eax             ; update buffer offset by adding EAX
-    jmp .write
+    ; try again if anything else to write
+    jnz .write
+
+    ; clear _io_errno
+    xor eax, eax
+    mov [_io_errno], eax
+
+    ; load EAX with buffer offset
+    mov eax, [ebp + 12]
+    sub eax, [ebp - 4]
+
+    ; exit successfully
+    jmp .leave
 
 .badargs:
     mov eax, EINVAL
@@ -78,18 +89,11 @@ _write:
     mov [_io_errno], eax
     xor eax, eax
     not eax
-    jmp .leave
-
-.success:
-    xor eax, eax                    ; clear _io_errno
-    mov [_io_errno], eax
-    mov eax, [ebp - 4]              ; load EAX with write booking
 
 .leave:
     mov esp, ebp
     pop ebp
     ret
-
 
 
 ; System Call
