@@ -1,7 +1,8 @@
-; FreeBSD Write System Call Implementation
+; FreeBSD I/O System Call Utils 
 ; Sat, 27 Jul 2013 16:23 -0300
 
 bits 32
+
 
 %include "errno.inc"
 %include "syscalls.inc"
@@ -21,11 +22,12 @@ section .text
 ; @prototype int _write (int fd, void *buf, int cnt);
 _write:
 
-    push ebp                        ; save previous stack base (frame)
-    mov ebp, esp                    ; set new stack base (frame)
-
-    ; alloc space for buffer base copy and syscall args
-    sub esp, byte 16
+    ; create stack frame and alloc 4 bytes
+    enter 4, 0
+    ; same as:
+    ; push ebp
+    ; mov ebp, esp
+    ; sub esp, byte 4
 
     ; prevent negative file descriptors
     mov eax, [ebp + 8]
@@ -44,6 +46,9 @@ _write:
 
     ; save a copy of buffer base
     mov [ebp - 4], eax              
+
+    ; alloc space for syscall args
+    sub esp, byte 12
 
 .write:
 
@@ -91,8 +96,11 @@ _write:
     not eax
 
 .leave:
-    mov esp, ebp
-    pop ebp
+    ; restore previous stack frame
+    leave
+    ; same as:
+    ; mov esp, ebp
+    ; pop ebp
     ret
 
 

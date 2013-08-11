@@ -4,11 +4,11 @@
 bits 32
 
 %define STDOUT 1
-%define SYS_EXIT 01h
 
 extern _strlen
 extern _itoa
 extern _write
+extern _exit
 
 section .data
 
@@ -62,7 +62,7 @@ _start:
     call _write
     add esp, 12
 
-    mov eax, SYS_EXIT
-    xor ebx, ebx
-    int 80h
+    xor eax, eax
+    push eax                        ; success status
+    call _exit
 
