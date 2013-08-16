@@ -16,14 +16,12 @@ section .text
 
 _strlen:
 
-    ; enter frame
-    push ebp                        ; save previous stack base (frame)
-    mov ebp, esp                    ; set new satck base (frame)
+    ; create new frame
+    enter 0, 0
 
     ; save register bank
     push es
     push ecx
-    push ebx
     push edi
 
     ; Make sure ES points to DS (SCASB uses ES:EDI pointer
@@ -33,24 +31,23 @@ _strlen:
 
     ; prepare for scan
     mov edi, [ebp + 8]              ; load first parameter (string pointer)
-    mov ebx, edi                    ; save string base
-    mov ecx, -1                     ; initialize ECX to FFFFFFFFh (REPNE)
+    xor ecx, ecx                    ; clear ECX...
+    not ecx                         ; turn it into FFFFFFFFh
     mov al, 0                       ; mov ascii null byte to AL
     cld                             ; clear direction flag (inc EDI)
     repne scasb                     ; scan string
-    mov eax, edi                    ; save EDI pointer to EAX
-    stc                             ; set carry flag before subtraction
-    sbb eax, ebx                    ; subtract base pointer
+
+    ; REPNE decrements ECX after string operation...
+    not ecx                         ; !x = (-1 * x) - 1
+    lea eax, [ecx - 1]              ; load EAX with ECX - 1
 
     ; restore register bank
     pop edi
-    pop ebx
     pop ecx
     pop es
 
-    ; leave
-    mov esp, ebp
-    pop ebp
+    ; restore previous stack frame and return
+    leave
     ret
 
 
@@ -60,8 +57,10 @@ _strlen:
 
 _itoa:
 
-    push ebp                        ; save previous stack base (frame)
-    mov ebp, esp                    ; set new stack base (frame)
+    ; create new frame
+    ; push ebp
+    ; mov ebp, esp
+    enter 0, 0
 
     ; save register bank
     push ecx
@@ -120,7 +119,9 @@ _itoa:
     pop edx
     pop ecx
 
-    mov esp, ebp
-    pop ebp
+    ; restore precious stack frame
+    ; mov esp, ebp
+    ; pop ebp
+    leave
     ret
 

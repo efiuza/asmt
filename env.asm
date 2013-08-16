@@ -12,7 +12,8 @@ extern _exit
 
 section .data
 
-    _str db "Hello Nasm World!", 10, 0
+    _str db "Hello Nasm World!", 10
+         db "By Emanuel...", 10, 10, 0
 
 section .text
 
