@@ -12,7 +12,7 @@ global _itoa
 section .text
 
 ; This function counts characters on null terminated strings.
-; @prototype unsigned int _strlen (const char *)
+; @prototype unsigned int _strlen(const char *)
 
 _strlen:
 
@@ -53,7 +53,7 @@ _strlen:
 
 ; This function converts a double word integer into a null terminated
 ; character string.
-; @prototype void _itoa (int, char *)
+; @prototype void _itoa(int, char *)
 
 _itoa:
 
@@ -122,6 +122,17 @@ _itoa:
     ; restore precious stack frame
     ; mov esp, ebp
     ; pop ebp
+    leave
+    ret
+
+; Apply parameters to a format string
+; @prototype int _strf(const char *frmt, char *buf, ...)
+_strf:
+
+    enter 4, 0
+
+    ; ...
+
     leave
     ret
 
