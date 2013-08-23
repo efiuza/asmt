@@ -2,9 +2,9 @@
 ; @author Emanuel F. Oliveira
 ; @date Sat, 27 Jul 2013 18:32 -0300
 
-; Important!
-; This library assumes that DS and SS segment registers
-; point to the same memory segment.
+; IMPORTANT!
+; This library assumes data segment registers (DS, ES and SS)
+; point to the same momory location.
 
 global _strlen
 global _itoa
@@ -20,14 +20,8 @@ _strlen:
     enter 0, 0
 
     ; save register bank
-    push es
     push ecx
     push edi
-
-    ; Make sure ES points to DS (SCASB uses ES:EDI pointer
-    ; and string pointer parameter is assumed to be a DS offset)
-    mov ax, ds
-    mov es, ax
 
     ; prepare for scan
     mov edi, [ebp + 8]              ; load first parameter (string pointer)
@@ -35,7 +29,10 @@ _strlen:
     not ecx                         ; turn it into FFFFFFFFh
     mov al, 0                       ; mov ascii null byte to AL
     cld                             ; clear direction flag (inc EDI)
-    repne scasb                     ; scan string
+
+    ; Scan string string at [ES:EDI]. Because Flat Memory Model is
+    ; assumed, there is no need to change memory segments.
+    repne scasb                     
 
     ; REPNE decrements ECX after string operation...
     not ecx                         ; !x = (-1 * x) - 1
@@ -44,7 +41,6 @@ _strlen:
     ; restore register bank
     pop edi
     pop ecx
-    pop es
 
     ; restore previous stack frame and return
     leave
@@ -125,13 +121,43 @@ _itoa:
     leave
     ret
 
+; @prototype char *_utoax(unsigned, char *);
+; Convert unsigned integer into hexadecial ASCII string.
+_utoax:
+    enter 0, 0
+    push ebx
+    mov eax, [ebp + 8]
+    leave
+    ret
+
+
 ; Apply parameters to a format string
+; Formats:
+;     %d or %i => signed decimal integer
+;     %c       => character
+;     %s       => null terminated byte string
 ; @prototype int _strf(const char *frmt, char *buf, ...)
 _strf:
 
     enter 4, 0
 
-    ; ...
+    ; save used registers
+    push ecx
+    push esi
+    push edi
+
+
+    ; initialize ECX
+    xor ecx, ecx
+    not ecx
+.loop:
+
+    loop .loop
+
+.leave:
+    pop edi
+    pop esi
+    pop ecx
 
     leave
     ret
