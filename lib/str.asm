@@ -128,22 +128,33 @@ _utoax:
 
     ; save register contents
     push edx
+    push esi
     push edi
 
     ; load parameters
-    mov edi, [ebp + 12]
     mov edx, [ebp + 8]
+    mov esi, [ebp + 12]
+    mov edi, esi
 
 .loop:
     mov eax, edx
     and eax, 15
-    cld
-    stosb
+    cmp eax, 10
+    jb .below
+    sub al, 10
+    add al, 'a'
+    jmp .continue
+.below:
+    add al, '0'
+.continue:
+    mov [edi], al
+    inc edi
     shr edx, 4
     jnz .loop
 
     ; restore registers
     pop edi
+    pop esi
     pop edx
 
     leave
