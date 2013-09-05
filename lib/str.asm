@@ -68,8 +68,8 @@ _utoad:
     ; load registers with paramenters
     mov eax, [ebp + 8]
     mov ebx, [ebp + 12]
-    mov edi, ebx
     mov esi, ebx
+    mov edi, ebx
 
     ; main division loop
     mov ecx, 10                     ; load ECX with divisor
@@ -77,8 +77,8 @@ _utoad:
     cdq                             ; sign extend EAX to EDX:EAX
     div ecx                         ; perform division using ECX as divisor
     add edx, '0'                    ; add ascii zero code to remainder (EDX)
-    mov [edi], dl                   ; store digit (ESI is an offset of DS)
-    inc edi                         ; adjust pointer to next position
+    mov [edi], dl
+    inc edi
     test eax, eax                   ; test quotient
     jnz .main_loop                  ; start over while EAX is not zero
 
@@ -237,6 +237,30 @@ _utoao:
     ; restore previous stack frame
     leave
     ret
+
+
+
+; @prototype char *_itoad(int, char *);
+; Conversion of a signed integer into a decimal ascii string.
+
+_itoad:
+
+    ; enter new stack frame
+    enter 4, 0
+
+    ; save previous register contents
+    push esi
+    push edi
+
+    ; load registers with parameters
+    mov eax, [ebp + 8]
+    mov esi, [ebp + 12]
+    mov edi, esi
+
+    test eax, eax
+    jns .convert
+    neg eax
+
 
 
 
