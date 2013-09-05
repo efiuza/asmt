@@ -4,7 +4,7 @@
 
 ; IMPORTANT!
 ; This library assumes data segment registers (DS, ES and SS)
-; point to the same momory location.
+; point to the same momory segment.
 
 global _strlen
 global _itoa
@@ -124,6 +124,7 @@ _itoa:
 ; @prototype char *_utoax(unsigned, char *);
 ; Convert unsigned integer into hexadecial ASCII string.
 _utoax:
+    ; enter new stack frame
     enter 0, 0
 
     ; save register contents
@@ -136,27 +137,47 @@ _utoax:
     mov esi, [ebp + 12]
     mov edi, esi
 
-.loop:
+.main_loop:
     mov eax, edx
     and eax, 15
     cmp eax, 10
     jb .below
-    sub al, 10
-    add al, 'a'
+    sub eax, 10
+    add eax, 'a'
     jmp .continue
 .below:
-    add al, '0'
+    add eax, '0'
 .continue:
     mov [edi], al
     inc edi
     shr edx, 4
-    jnz .loop
+    jnz .main_loop
+
+    ; mark end of string
+    mov byte [edi], 0
+    jmp .test_reverse
+
+    ; reverse digits order
+.reverse:
+    mov al, [esi]
+    mov ah, [edi]
+    mov [esi], ah
+    mov [edi], al
+    inc esi
+.test_reverse:
+    dec edi
+    cmp edi, esi
+    ja .reverse
+
+    ; set return value
+    mov eax, [ebp + 12]
 
     ; restore registers
     pop edi
     pop esi
     pop edx
 
+    ; restore previous stack frame
     leave
     ret
 
