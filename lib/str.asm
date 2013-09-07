@@ -54,7 +54,7 @@ _strlen:
 
 
 ; @prototype char *_utoad(unsigned, char *);
-; Conversion of an unsigned integer into a decimal ascii string
+; Converts an unsigned integer into a decimal ascii string
 
 _utoad:
 
@@ -119,7 +119,7 @@ _utoad:
 
 
 ; @prototype char *_utoax(unsigned, char *);
-; Conversion of an unsigned integer into an hexadecimal ascii string.
+; Converts an unsigned integer into an hexadecimal ascii string.
 
 _utoax:
 
@@ -187,7 +187,7 @@ _utoax:
 
 
 ; @prototype char *_utoao(unsigned, char *);
-; Conversion of an unsigned integer into an octal ascii string.
+; Converts an unsigned integer into an octal ascii string.
 
 _utoao:
 
@@ -386,7 +386,6 @@ _strf:
     push ecx
     push esi
     push edi
-
 
     ; initialize ECX
     xor ecx, ecx
