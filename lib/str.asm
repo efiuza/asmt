@@ -40,7 +40,8 @@ _strlen:
     loop .scan
 
 .return:
-    not ecx                         ; ~ecx = (-1 * ecx) - 1
+    ; not ecx = (-1 * ecx) - 1
+    not ecx                         
     mov eax, ecx
 
     ; restore previous register contents
