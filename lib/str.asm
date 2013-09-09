@@ -369,6 +369,65 @@ _itoa:
 
 
 
+
+
+
+; @prototype char *_utoa(unsgined value, int base, char *buffer);
+; Converts an integer value to a null-terminated ascii string
+; using the specified base and stores the result in the
+; specified buffer.
+
+_utoa:
+
+    ; enter new stack frame
+    push ebp
+    mov ebp, esp
+
+    ; save previous register values
+    push ecx
+    push edx
+    push ebx
+    push esi
+    push edi
+
+    ; load registers and locals with parameters
+    mov eax, [ebp + 8]
+    mov ecx, [ebp + 12]
+    mov esi, [ebp + 16]
+    mov edi, esi
+
+    ; check base
+    cmp ecx, 0Ah
+    jz .default
+    cmp ecx, 01h
+    jb .terminate
+    cmp ecx, 24h
+    ja .terminate
+
+
+    ; default algorithm
+.default:
+    cdq
+    div ecx
+    cmp edx, 09h
+    ja .extended_digit
+    add edx, 30h
+    jmp .store_digit
+    add edx, ebx
+.standard_digit:
+.store_digit:
+    mov [edi], dl
+    test eax, eax
+    jnz .default
+
+
+.poweroftwo
+
+
+
+
+
+
 ; @prototype int _strf(const char *frmt, char *buf, ...);
 ; Apply parameters to a format string
 ; Formats:
